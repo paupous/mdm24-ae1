@@ -36,3 +36,50 @@ pueda ser directamente asignado a un o diversos grupos?*
     **Classificacion:** Inferencia
     
     **Razon**: Aquí se busca inferir si un usuario, con base en su historial de compras, pertenece a uno o más grupos. Se asocia el historial con patrones de comportamiento grupal.
+
+## Pregunta 2
+*Sabemos que un usuario de nuestra red empresarial ha estado usando esta para fines
+no relacionados con el trabajo, como por ejemplo tener un servicio web no autorizado
+abierto a la red (otros usuarios tienen servicios web activados y autorizados). No
+queremos tener que rastrear los puertos de cada PC, y sabemos que la actividad puede
+haber cesado. Pero podemos acceder a los registros de conexiones TCP de cada máquina
+de cada trabajador (hacia donde abre conexión un PC concreto). Sabemos que nuestros
+clientes se conectan desde lugares remotos de forma legítima, como parte de nuestro
+negocio, y que un trabajador puede haber habilitado temporalmente servicios de
+prueba. Nuestro objetivo es reducir lo posible la lista de posibles culpables, con tal de
+explicarles que por favor no expongan nuestros sistemas sin permiso de los operadores
+o la dirección.*
+
+1. Obtención de Datos
+Para iniciar el análisis, se necesitan los registros de conexiones TCP de cada máquina, idealmente obtenidos a través de herramientas de monitoreo o logs de red como:
+    - Registros de conexiones TCP/UDP: Información sobre las conexiones salientes y entrantes de cada PC, incluyendo:
+        
+        - Dirección IP origen
+        - Dirección IP destino
+        - Puerto origen y puerto destino
+        - Timestamps (marca temporal de cada conexión)
+    - Datos complementarios:
+        - Lista de servicios autorizados (IPs y puertos conocidos que son legítimos).
+        - Lista de direcciones IP de clientes externos legítimos.
+        - Registros de usuarios (nombre del trabajador, dirección IP asignada).
+        - Registros históricos para detectar servicios activos temporalmente.
+
+2. Tratamiento de Datos
+
+//TODO
+
+3. Preguntas Clave para Resolver el Problema
+- ¿Cuáles son los puertos y direcciones IP destino que no están en la lista de servicios autorizados?
+
+- ¿Qué usuarios (o PCs) han generado conexiones a esos destinos o puertos no autorizados?
+
+- Crear una lista de usuarios sospechosos basada en las conexiones no permitidas.
+
+- Detectar tráfico hacia puertos comunes de servicios web no autorizados 
+
+4. Análisis y Visualización de Datos
+
+//TODO
+
+2. Introducción a R
+
