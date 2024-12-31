@@ -8,15 +8,19 @@ data <- read.table("data/epa-http.csv",
   fill=TRUE,
   quote="\"")
 
-# Limpiamos los datos
+# Format and clean data
 data$Bytes <- as.numeric(data$Bytes)
-data$Timestamp2 <- (gsub("\\[|\\]", "", data$Timestamp))
-data$Hour <- strsplit(data$Timestamp2, ":")[[1]][2]
-data$P_Tipo <- as.character(strsplit(data$Peticion, " ")[[1]][1])
-data$P_Url <- as.character(strsplit(data$Peticion, " ")[[1]][2])
-data$P_Protocolo <- as.character(strsplit(data$Peticion, " ")[[1]][3])
+data$Bytes <- ifelse(is.na(data$Bytes), 0, data$Bytes)
 
-show(data)
+data$Timestamp <- gsub("\\[|\\]", "", data$Timestamp)
+data$Hour <-
+  sapply(strsplit(data$Timestamp, ":"), function(x) as.numeric(x[2]))
+data$P_Tipo <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[1]))
+data$P_Url <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[2]))
+data$P_Protocolo <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[3]))
 
 # Pregunta 1
 ##1. Cuales son las dimensiones del dataset cargado (número de filas y columnas)
@@ -48,11 +52,19 @@ cat("La hora con mayor volumen de peticiones GET es:", max_hour, "con un total d
 # Pregunta 4
 ## De las peticiones hechas por instituciones educativas (.edu), ¿Cuantos bytes en total se han transmitido, en peticiones de descarga de ficheros de texto ".txt"?
 eduactional_requests <- subset(data, grepl(".edu", data$IP))
-txt_requests <- subset(eduactional_requests, grepl(".txt", eduactional_requests$Peticion))
 
-cat("Total de bytes transmitidos en peticiones .txt de IPs educativas:", sum(txt_requests$Bytes), "\n")
+total_txt_requests <- sum(subset(eduactional_requests, grepl(".txt", P_Url))$Bytes)
+
+cat("Total de bytes transmitidos en peticiones .txt de IPs educativas:", total_txt_requests, "\n")
 
 # Pregunta 5
 # Si separamos la petición en 3 partes (Tipo, URL, Protocolo), usando str_split y el separador " " (espacio), ¿cuantas peticiones buscan directamente la URL = "/"?
 
+root_requests <- subset(data, P_Url == "/")
+cat("Número de peticiones que buscan directamente la URL = /:", nrow(root_requests), "\n")
 
+# Pregunta 6
+# Aprovechando que hemos separado la petición en 3 partes (Tipo, URL, Protocolo) ¿Cuantas peticiones NO tienen como protocolo "HTTP/0.2"?
+
+non_http_02_requests <- subset(data, P_Protocolo != "HTTP/0.2")
+cat("Número de peticiones que NO tienen como protocolo HTTP/0.2:", nrow(non_http_02_requests), "\n")

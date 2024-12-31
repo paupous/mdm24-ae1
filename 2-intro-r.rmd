@@ -1,0 +1,112 @@
+---
+title: "2. Introduccion a R"
+author: Pau Pous
+date: 19/12/2024
+output: 2-intro-r
+---
+
+## 2. Introduccion a R
+
+```{r}
+library(readr)
+```
+
+### Load, clean and parse the data
+
+El fichero CSV no tiene columnas y los campos están separados por espacios. Vamos a cargarlo en un data frame de R y a añadirle los nombres de las columnas.
+
+```{r}	
+column_names <- c("IP", "Timestamp", "Peticion", "Codigo", "Bytes")
+column_types <- cols(
+  IP = col_character(),
+  Timestamp = col_character(),
+  Peticion = col_character(),
+  Codigo = col_character(),
+  Bytes = col_double()
+)
+data <- read_delim("data/epa-http.csv", 
+  col_names = column_names, 
+  col_types = column_types,
+  show_col_types = TRUE,
+  quote = "\"")
+```
+
+Una vez cargado el fichoro, limpiamos y añadimos las columnas necessarias para el analisis.
+
+```{r}
+data$Bytes[is.na(data$Bytes)] <- 0
+```
+```{r}
+data$Timestamp <- gsub("\\[|\\]", "", data$Timestamp)
+
+data$Hour <-
+  sapply(strsplit(data$Timestamp, ":"), function(x) as.numeric(x[2]))
+data$P_Tipo <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[1]))
+data$P_Url <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[2]))
+data$P_Protocolo <-
+  sapply(strsplit(data$Peticion, " "), function(x) as.character(x[3]))
+```
+
+Preview dataset
+```{r}
+head(data)
+```
+### Preguntas
+
+#### Pregunta 1
+Cuales son las dimensiones del dataset cargado (número de filas y columnas)
+
+```{r}
+dimensions <- dim(data)
+```
+Numero de filas: **`r dimensions[1]`**
+Numero de columnas: **`r dimensions[2]`**
+
+```{r}
+mean_bytes <- mean(data$Bytes)
+```
+Valor medio de la columna Bytes es **`r mean_bytes`**
+
+#### Pregunta 2
+De las diferentes IPs de origen accediendo al servidor, ¿cuantas pertenecen a una IP claramente educativa (que contenga ".edu")?
+
+```{r}
+educational_ips <- sum(grepl(".edu", data$IP))
+```
+Numero de IPs educativas: **`r educational_ips`**
+
+#### Pregunta 3
+De todas las peticiones recibidas por el servidor cual es la hora en la que hay mayor volumen de peticiones HTTP de tipo "GET"?
+
+```{r}
+get_requests <- subset(data, data$P_Tipo == "GET")
+requests_by_hour <- table(get_requests$Hour)
+
+max_count <- max(requests_by_hour)
+max_hour <- names(requests_by_hour[requests_by_hour == max_count])
+```
+La hora con mayor volumen de peticiones GET es **`r max_hour`** con **`r max_count`** peticiones
+
+#### Pregunta 4
+De las peticiones hechas por instituciones educativas (.edu), ¿Cuantos bytes en total se han transmitido, en peticiones de descarga de ficheros de texto ".txt"?
+```{r}
+eduactional_requests <- subset(data, grepl(".edu", data$IP))
+total_txt_requests <- sum(subset(eduactional_requests, grepl(".txt", P_Url))$Bytes)
+```
+Total de bytes transmitidos en peticiones .txt de IPs educativas: **`r total_txt_requests`**
+
+#### Pregunta 5
+Si separamos la petición en 3 partes (Tipo, URL, Protocolo), usando str_split y el separador " " (espacio), ¿cuantas peticiones buscan directamente la URL = "/"?
+```{r}
+root_requests <- subset(data, P_Url == "/")
+```
+Número de peticiones que buscan directamente la URL = /: **`r nrow(root_requests)`**
+
+#### Pregunta 6
+Aprovechando que hemos separado la petición en 3 partes (Tipo, URL, Protocolo) ¿Cuantas peticiones NO tienen como protocolo "HTTP/0.2"?
+```{r}
+non_http_02_requests <- subset(data, P_Protocolo != "HTTP/0.2")
+```
+Número de peticiones que NO tienen como protocolo HTTP/0.2: **`r nrow(non_http_02_requests)`**
